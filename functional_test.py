@@ -1,7 +1,12 @@
+import platform
+
 from selenium import webdriver
 
 
-browser = webdriver.Firefox(executable_path='/Applications/geckodriver')
+if 'Ubuntu' in platform.platform():
+    browser = webdriver.Firefox(executable_path='/usr/local/bin/geckodriver')
+else:
+    browser = webdriver.Firefox(executable_path='/Applications/geckodriver')
 
 # 打开网站
 browser.get('http://localhost:8000')
