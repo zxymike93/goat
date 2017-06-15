@@ -42,7 +42,9 @@ class NewVisitorTest(unittest.TestCase):
         table = self.browser.find_element_by_id('id-table-todo')
         rows = table.find_elements_by_tag_name('tr')
         self.assertTrue(
-            any(row.text == '1. Write a todo app') for row in rows)
+            any(row.text == '1. Write a todo app' for row in rows),
+            'Entries do not appear on table.'
+        )
 
         self.fail('Finish functional test')
 
