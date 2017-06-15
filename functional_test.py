@@ -23,6 +23,14 @@ class NewVisitorTest(unittest.TestCase):
         """
         self.browser.quit()
 
+    def check_for_row_in_table(self, entry_text):
+        table = self.browser.find_element_by_id('id-table-todo')
+        rows = table.find_elements_by_tag_name('tr')
+        self.assertIn(
+            entry_text,
+            [row.text for row in rows]
+        )
+
     def test_can_start_and_entry_and_retrive_it_later(self):
         self.browser.get('http://localhost:8000')
 
@@ -39,12 +47,8 @@ class NewVisitorTest(unittest.TestCase):
         input.send_keys('Write a todo app')
         input.send_keys(Keys.ENTER)
 
-        table = self.browser.find_element_by_id('id-table-todo')
-        rows = table.find_elements_by_tag_name('tr')
-        self.assertTrue(
-            any(row.text == '1. Write a todo app' for row in rows),
-            'Entries do not appear on table. But `%s`' % table.text
-        )
+        self.check_for_row_in_table('1. Write a todo app')
+        self.check_for_row_in_table('2. Twice')
 
         self.fail('Finish functional test')
 
