@@ -12,8 +12,21 @@ class HomePageTest(TestCase):
         found = resolve('/')
         self.assertEqual(found.func, home_page)
 
-    def test_index_response_right_html(self):
+    def test_home_page_response_right_html(self):
         req = HttpRequest()
         resp = home_page(req)
         html = render_to_string('lists/home_page.html')
+        self.assertEqual(resp.content.decode(), html)
+
+    def test_home_page_can_save_post_request(self):
+        req = HttpRequest()
+        req.method = 'POST'
+        req.POST['todo-entry'] = 'A new list item'
+
+        resp = home_page(req)
+        self.assertIn('A new list item', resp.content.decode())
+        html = render_to_string(
+            'lists/home_page.html',
+            {'todo_entries': 'A new list item'}  # pass value to template
+        )
         self.assertEqual(resp.content.decode(), html)

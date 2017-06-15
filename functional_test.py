@@ -43,7 +43,7 @@ class NewVisitorTest(unittest.TestCase):
         rows = table.find_elements_by_tag_name('tr')
         self.assertTrue(
             any(row.text == '1. Write a todo app' for row in rows),
-            'Entries do not appear on table.'
+            'Entries do not appear on table. But `%s`' % table.text
         )
 
         self.fail('Finish functional test')
