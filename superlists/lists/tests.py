@@ -36,16 +36,25 @@ class HomePageViewTest(TestCase):
         html = render_to_string('lists/home_page.html')
         self.assertEqual(resp.content.decode(), html)
 
-    def test_home_page_can_save_post_request(self):
+    def test_home_page_not_saving_empty(self):
+        req = HttpRequest()
+        home_page(req)
+        self.assertEqual(Todo.objects.count(), 0)
+
+    def test_home_page_can_save_post_data(self):
+        req = HttpRequest()
+        req.method = 'POST'
+        req.POST['todo-entry'] = 'A new list item'
+        # model saving test
+        home_page(req)
+        self.assertEqual(Todo.objects.count(), 1)
+        first = Todo.objects.first()
+        self.assertEqual(first.task, 'A new list item')
+
+    def test_home_page_redirests_after_post(self):
         req = HttpRequest()
         req.method = 'POST'
         req.POST['todo-entry'] = 'A new list item'
         resp = home_page(req)
-
-        # model saving test
-        self.assertEqual(Todo.objects.count(), 1)
-        first = Todo.objects.first()
-        self.assertEqual(first.task, 'A new list item')
-        # redirect after post
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], '/')
