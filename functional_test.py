@@ -2,6 +2,7 @@ import platform
 import unittest
 
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 
 
 class NewVisitorTest(unittest.TestCase):
@@ -26,7 +27,24 @@ class NewVisitorTest(unittest.TestCase):
         self.browser.get('http://localhost:8000')
 
         self.assertIn('To-Do', self.browser.title)
-        self.fail('browser title is %s' % self.browser.title)
+        header_text = self.browser.find_element_by_tag_name('h1').text
+        self.assertIn('To-Do', header_text)
+
+        input = self.browser.find_element_by_id('id-input-todo')
+        self.assertEqual(
+            input.get_attribute('placeholder'),
+            'What do you want to do?'
+        )
+
+        input.send_keys('Write a todo app')
+        input.send_keys(Keys.ENTER)
+
+        table = self.browser.find_element_by_id('id-table-todo')
+        rows = table.find_elements_by_tag_name('tr')
+        self.assertTrue(
+            any(row.text == '1. Write a todo app') for row in rows)
+
+        self.fail('Finish functional test')
 
         # entry: "buy something"
         # update >> shows "1. buy something"
