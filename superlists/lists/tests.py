@@ -60,8 +60,13 @@ class HomePageViewTest(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], '/')
 
-    # def test_home_page_can_retrieve_saved_data(self):
-    #     req = HttpRequest()
-    #     req.method = 'GET'
-    #     resp = home_page(req)
-    #     self.assertIn('A new list item', resp.content.decode())
+    def test_home_page_can_retrieve_saved_data(self):
+        Todo.objects.create(task='A new list item')
+        Todo.objects.create(task='Second new list item')
+
+        req = HttpRequest()
+        req.method = 'GET'
+        resp = home_page(req)
+
+        self.assertIn('A new list item', resp.content.decode())
+        self.assertIn('Second new list item', resp.content.decode())

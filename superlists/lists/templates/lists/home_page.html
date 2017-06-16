@@ -11,7 +11,7 @@
         <table id="id-table-todo">
             {% if todo_entries %}
                 {% for todo in todo_entries %}
-                    <tr><td>{{ todo.task }}</td></tr>
+                    <tr><td>{{ forloop.counter}}: {{ todo.task }}</td></tr>
                 {% endfor %}
             {% endif %}
         </table>
