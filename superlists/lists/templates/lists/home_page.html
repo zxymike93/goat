@@ -9,7 +9,11 @@
             {% csrf_token %}
         </form>
         <table id="id-table-todo">
-            <tr><td>{{ todo_entries }}</td></tr>
+            {% if todo_entries %}
+                {% for todo in todo_entries %}
+                    <tr><td>{{ todo.task }}</td></tr>
+                {% endfor %}
+            {% endif %}
         </table>
     </body>
 </html>

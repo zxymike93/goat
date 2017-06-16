@@ -9,7 +9,7 @@ from lists.views import home_page
 
 class TodoModelTest(TestCase):
 
-    def test_save_and_retrive_todos(self):
+    def test_save_and_retrive_instances(self):
         todo = Todo()
         todo.task = 'Write a Django test'
         todo.save()
@@ -26,22 +26,24 @@ class TodoModelTest(TestCase):
 
 class HomePageViewTest(TestCase):
 
-    def test_root_url_matches_home_page(self):
+    def test_root_url_mapping_to_home_page_view(self):
         found = resolve('/')
         self.assertEqual(found.func, home_page)
 
-    def test_home_page_response_right_html(self):
+    def test_home_page_render_correct_html(self):
         req = HttpRequest()
+        req.method = 'GET'
         resp = home_page(req)
         html = render_to_string('lists/home_page.html')
         self.assertEqual(resp.content.decode(), html)
 
-    def test_home_page_not_saving_empty(self):
+    def test_home_page_not_saving_empty_post(self):
         req = HttpRequest()
+        req.method = 'POST'
         home_page(req)
         self.assertEqual(Todo.objects.count(), 0)
 
-    def test_home_page_can_save_post_data(self):
+    def test_home_page_can_save_post_in_db(self):
         req = HttpRequest()
         req.method = 'POST'
         req.POST['todo-entry'] = 'A new list item'
@@ -54,7 +56,12 @@ class HomePageViewTest(TestCase):
     def test_home_page_redirests_after_post(self):
         req = HttpRequest()
         req.method = 'POST'
-        req.POST['todo-entry'] = 'A new list item'
         resp = home_page(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], '/')
+
+    # def test_home_page_can_retrieve_saved_data(self):
+    #     req = HttpRequest()
+    #     req.method = 'GET'
+    #     resp = home_page(req)
+    #     self.assertIn('A new list item', resp.content.decode())
