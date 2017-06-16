@@ -1,12 +1,14 @@
 import platform
-import unittest
 
+from django.test import LiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 
-class NewVisitorTest(unittest.TestCase):
-
+class NewVisitorTest(LiveServerTestCase):
+    """LiveServerTestCase:
+    Set up a live server for test and tear down when tests finished.
+    """
     def setUp(self):
         if 'Ubuntu' in platform.platform():
             self.browser = webdriver.Firefox(
@@ -32,7 +34,7 @@ class NewVisitorTest(unittest.TestCase):
         )
 
     def test_can_start_and_entry_and_retrive_it_later(self):
-        self.browser.get('http://localhost:8000')
+        self.browser.get(self.live_server_url)
 
         self.assertIn('To-Do', self.browser.title)
         header_text = self.browser.find_element_by_tag_name('h1').text
@@ -57,7 +59,3 @@ class NewVisitorTest(unittest.TestCase):
         # entry: "buy more"
         # update >> shows "2. buy more"
         # check
-
-
-if __name__ == '__main__':
-    unittest.main()
