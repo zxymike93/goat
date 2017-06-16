@@ -1,8 +1,11 @@
 import platform
+import time
 
 from django.test import LiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+
+from utils import log
 
 
 class NewVisitorTest(LiveServerTestCase):
@@ -19,14 +22,12 @@ class NewVisitorTest(LiveServerTestCase):
         self.browser.implicitly_wait(5)
 
     def tearDown(self):
-        """
-        Calls whether test succeed or not,
-        unless.. setUp() fails.
-        """
         self.browser.quit()
 
-    def check_for_row_in_table(self, entry_text):
+    def __for_row_in_table(self, entry_text):
+        time.sleep(10)
         table = self.browser.find_element_by_id('id-table-todo')
+        log('find id-table-todo', table)
         rows = table.find_elements_by_tag_name('tr')
         self.assertIn(
             entry_text,
@@ -46,16 +47,15 @@ class NewVisitorTest(LiveServerTestCase):
             'What do you want to do?'
         )
 
-        input.send_keys('Write a todo app')
+        input.send_keys('Buy peacock feathers')
         input.send_keys(Keys.ENTER)
+        self.__for_row_in_table('1: Buy peacock feathers')
 
-        self.check_for_row_in_table('1. Write a todo app')
-        self.check_for_row_in_table('2. Twice')
+        # have to re-find the input for another input test
+        # or you'll get god knows what Error
+        input = self.browser.find_element_by_id('id-input-todo')
+        input.send_keys('Use peacock feathers to make a fly')
+        input.send_keys(Keys.ENTER)
+        self.__for_row_in_table('2: Use peacock feathers to make a fly')
 
         self.fail('Finish functional test')
-
-        # entry: "buy something"
-        # update >> shows "1. buy something"
-        # entry: "buy more"
-        # update >> shows "2. buy more"
-        # check
