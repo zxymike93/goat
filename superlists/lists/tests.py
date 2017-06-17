@@ -5,6 +5,7 @@ from django.test import TestCase
 
 from lists.models import Todo, List
 from lists.views import home_page
+from utils import log
 
 
 class HomePageViewTest(TestCase):
@@ -31,18 +32,18 @@ class NewListTest(TestCase):
         self.assertEqual(first.task, 'A new list item')
 
     def test_redirects_after_post(self):
-        resp = self.client.post('/lists/new/', data={})
+        resp = self.client.post('/lists/new/',
+                                {'todo-entry': 'A new list item'})
         self.assertEqual(resp.status_code, 302)
-        self.assertRedirects(
-            resp['location'],
-            '/lists/the-only-list-in-the-world/'
-        )
+        ls = List.objects.first()
+        self.assertRedirects(resp, '/lists/%d/' % ls.id)
 
 
 class ListViewTest(TestCase):
-    """Use Django's test client"""
+
     def test_uses_list_template(self):
-        resp = self.client.get('/lists/the-only-list-in-the-world/')
+        ls = List.objects.create()
+        resp = self.client.get('/lists/%d/' % ls.id)
         self.assertTemplateUsed(resp, 'lists/list.html')
 
     def test_displays_only_todos_for_unique_list(self):
@@ -54,7 +55,9 @@ class ListViewTest(TestCase):
         todo3 = Todo.objects.create(task='todo 3', list=list2)
         todo4 = Todo.objects.create(task='todo 4', list=list2)
 
+        log('list1 id', list1.id)
         resp = self.client.get('/lists/%d/' % list1.id)
+        log('test_displays_only_todo_for_unique_list', resp)
 
         self.assertContains(resp, todo1.task)
         self.assertContains(resp, todo2.task)
