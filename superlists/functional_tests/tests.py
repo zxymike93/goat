@@ -49,6 +49,9 @@ class NewVisitorTest(LiveServerTestCase):
 
         input.send_keys('Buy peacock feathers')
         input.send_keys(Keys.ENTER)
+        # redirect to personal list url
+        list_identifier = self.browser.current_url
+        self.assertRegex(list_identifier, '/lists/.+')
         self.__for_row_in_table('1: Buy peacock feathers')
 
         # have to re-find the input for another input test
@@ -57,5 +60,29 @@ class NewVisitorTest(LiveServerTestCase):
         input.send_keys('Use peacock feathers to make a fly')
         input.send_keys(Keys.ENTER)
         self.__for_row_in_table('2: Use peacock feathers to make a fly')
+
+        #
+        # start a new browser
+        #
+        self.browser.quit()
+        self.browser = webdriver.Firefox()
+
+        self.browser.get(self.live_server_url)
+        page_text = self.browser.find_element_by_tag_name('body').text
+        self.assertNotIn('Buy peacock feathers', page_text)
+        self.assertNotIn('make a fly', page_text)
+
+        input = self.browser.find_element_by_id('id-input-todo')
+        input.send_keys('Buy milk')
+        input.send_keys(Keys.ENTER)
+
+        another_list_identifier = self.browser.current_url
+        self.assertRegex(another_list_identifier, '/lists/.+')
+        self.assertNotEqual(another_list_identifier, list_identifier)
+
+        # check again after enter
+        page_text = self.browser.find_element_by_tag_name('body').text
+        self.assertNotIn('Buy peacock feathers', page_text)
+        self.assertIn('Buy milk', page_text)
 
         self.fail('Finish functional test')
