@@ -22,7 +22,7 @@ class HomePageViewTest(TestCase):
         self.assertEqual(resp.content.decode(), html)
 
 
-class NewListTest(TestCase):
+class NewListViewTest(TestCase):
 
     def test_can_save_post_in_db(self):
         self.client.post('/lists/new/', {'todo-entry': 'A new list item'})
@@ -36,7 +36,7 @@ class NewListTest(TestCase):
                                 {'todo-entry': 'A new list item'})
         self.assertEqual(resp.status_code, 302)
         ls = List.objects.first()
-        self.assertRedirects(resp, '/lists/%d/' % ls.id)
+        self.assertRedirects(resp, ('/lists/%d/' % ls.id))
 
 
 class ListViewTest(TestCase):
@@ -63,6 +63,37 @@ class ListViewTest(TestCase):
         self.assertContains(resp, todo2.task)
         self.assertNotContains(resp, todo3.task)
         self.assertNotContains(resp, todo4.task)
+
+
+class AddTodoViewTest(TestCase):
+
+    def test_can_save_post_todo_to_its_own_list(self):
+        other = List.objects.create()
+        own = List.objects.create()
+
+        self.client.post(
+            ('/lists/%d/add/' % own.id),
+            data={'todo-entry': 'New todo in its own list'}
+        )
+        todo = Todo.objects.first()
+        log('todo last', todo)
+        self.assertEqual(todo.task, 'New todo in its own list')
+        self.assertEqual(todo.list, own)
+        self.assertNotEqual(todo.list, other)
+
+    def test_redirects_to_list_view(self):
+        own = List.objects.create()
+
+        resp = self.client.post(
+            ('/lists/%d/add/' % own.id),
+            data={'todo-entry': 'New todo in its own list'}
+        )
+        self.assertRedirects(resp, ('/lists/%d/' % own.id))
+
+    def test_passes_correct_list_to_template(self):
+        ls = List.objects.create()
+        resp = self.client.get('/lists/%d/' % ls.id)
+        self.assertEqual(resp.context['list'], ls)
 
 
 class ListAndTodoModelsTest(TestCase):

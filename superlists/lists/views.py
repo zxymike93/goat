@@ -16,5 +16,16 @@ def new_list(request):
 
 
 def view_list(request, list_id):
-    todos = Todo.objects.filter(list=list_id)
-    return render(request, 'lists/list.html', {'todos': todos})
+    ls = List.objects.get(id=list_id)
+    todos = Todo.objects.filter(list=ls)
+    context = {
+        'list': ls,
+        'todos': todos
+    }
+    return render(request, 'lists/list.html', context)
+
+
+def add_todo(request, list_id):
+    ls = List.objects.get(id=list_id)
+    Todo.objects.create(task=request.POST['todo-entry'], list=ls)
+    return redirect('/lists/%d/' % ls.id)
