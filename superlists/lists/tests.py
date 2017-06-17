@@ -63,20 +63,13 @@ class HomePageViewTest(TestCase):
             '/lists/the-only-list-in-the-world/'
         )
 
-    def test_home_page_can_retrieve_saved_data(self):
-        Todo.objects.create(task='A new list item')
-        Todo.objects.create(task='Second new list item')
-
-        req = HttpRequest()
-        req.method = 'GET'
-        resp = home_page(req)
-
-        self.assertIn('A new list item', resp.content.decode())
-        self.assertIn('Second new list item', resp.content.decode())
-
 
 class ListViewTest(TestCase):
     """Use Django's test client"""
+    def test_uses_list_template(self):
+        resp = self.client.get('/lists/the-only-list-in-the-world/')
+        self.assertTemplateUsed(resp, 'lists/list.html')
+
     def test_displays_all_todos(self):
         Todo.objects.create(task='todo 1')
         Todo.objects.create(task='todo 2')
