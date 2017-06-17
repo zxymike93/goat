@@ -3,25 +3,35 @@ from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.test import TestCase
 
-from lists.models import Todo
+from lists.models import Todo, List
 from lists.views import home_page
 
 
-class TodoModelTest(TestCase):
+class ListAndTodoModelsTest(TestCase):
 
     def test_save_and_retrive_instances(self):
+        list_ = List()
+        list_.save()
+        # create a todo with task and list
         todo = Todo()
-        todo.task = 'Write a Django test'
+        todo.task = 'The first (ever) list'
+        todo.list = list_
         todo.save()
-
+        # create another todo with task and the same list
         twodo = Todo()
-        twodo.task = 'Write two Django test'
+        twodo.task = 'Todo the second'
+        twodo.list = list_
         twodo.save()
-
+        # check if the list created in db same as list_
+        saved_list = List.objects.first()
+        self.assertEqual(saved_list, list_)
+        # check if db contains the same data as instances above
         todos = Todo.objects.all()
         self.assertEqual(todos.count(), 2)
         self.assertEqual(todo.task, todos[0].task)
         self.assertEqual(twodo.task, todos[1].task)
+        self.assertEqual(todo.list, todos[0].list)
+        self.assertEqual(todo.list, todos[1].list)
 
 
 class HomePageViewTest(TestCase):
@@ -71,8 +81,10 @@ class ListViewTest(TestCase):
         self.assertTemplateUsed(resp, 'lists/list.html')
 
     def test_displays_all_todos(self):
-        Todo.objects.create(task='todo 1')
-        Todo.objects.create(task='todo 2')
+        list_ = List.objects.create()
+
+        Todo.objects.create(task='todo 1', list=list_)
+        Todo.objects.create(task='todo 2', list=list_)
 
         resp = self.client.get('/lists/the-only-list-in-the-world/')
 
