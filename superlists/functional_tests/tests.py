@@ -49,8 +49,10 @@ class NewVisitorTest(LiveServerTestCase):
 
         input.send_keys('Buy peacock feathers')
         input.send_keys(Keys.ENTER)
-        # redirect to personal list url
+        # wait and redirect to personal list url
+        time.sleep(5)
         list_identifier = self.browser.current_url
+        log('list_identifier', list_identifier)
         self.assertRegex(list_identifier, '/lists/.+')
         self.__for_row_in_table('1: Buy peacock feathers')
 
@@ -76,6 +78,7 @@ class NewVisitorTest(LiveServerTestCase):
         input.send_keys('Buy milk')
         input.send_keys(Keys.ENTER)
 
+        time.sleep(5)
         another_list_identifier = self.browser.current_url
         self.assertRegex(another_list_identifier, '/lists/.+')
         self.assertNotEqual(another_list_identifier, list_identifier)

@@ -53,12 +53,15 @@ class HomePageViewTest(TestCase):
         first = Todo.objects.first()
         self.assertEqual(first.task, 'A new list item')
 
-    def test_home_page_redirests_after_post(self):
+    def test_home_page_redirects_after_post(self):
         req = HttpRequest()
         req.method = 'POST'
         resp = home_page(req)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['location'], '/')
+        self.assertEqual(
+            resp['location'],
+            '/lists/the-only-list-in-the-world/'
+        )
 
     def test_home_page_can_retrieve_saved_data(self):
         Todo.objects.create(task='A new list item')
@@ -70,3 +73,15 @@ class HomePageViewTest(TestCase):
 
         self.assertIn('A new list item', resp.content.decode())
         self.assertIn('Second new list item', resp.content.decode())
+
+
+class ListViewTest(TestCase):
+    """Use Django's test client"""
+    def test_displays_all_todos(self):
+        Todo.objects.create(task='todo 1')
+        Todo.objects.create(task='todo 2')
+
+        resp = self.client.get('/lists/the-only-list-in-the-world/')
+
+        self. assertContains(resp, 'todo 1')
+        self. assertContains(resp, 'todo 2')

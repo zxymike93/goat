@@ -1,5 +1,5 @@
 from django.conf.urls import include, url
-from django.contrib import admin
+# from django.contrib import admin
 
 from lists import urls as lists_url
 
