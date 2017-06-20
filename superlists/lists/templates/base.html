@@ -1,0 +1,15 @@
+<html>
+<head>
+  <title>To-Do Lists</title>
+</head>
+
+<body>
+    <h1>{% block header_text %}{% endblock %}</h1>
+    <form action="{% block form_action %}{% endblock %}" method="post">
+      <input id="id-input-todo" name="todo-entry" placeholder="What do you want to do?">
+      {% csrf_token %}
+    </form>
+    {% block table %}
+    {% endblock %}
+</body>
+</html>
