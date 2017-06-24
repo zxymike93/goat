@@ -105,3 +105,18 @@ class ListViewTest(TestCase):
         ls = List.objects.create()
         resp = self.client.get('/lists/%d/' % ls.id)
         self.assertEqual(resp.context['list'], ls)
+
+    def test_validation_errors_are_sent_to_list_page_itself(self):
+        ls = List.objects.create()
+        resp = self.client.post(
+            '/lists/%d/' % ls.id,
+            data={'todo-entry': ''}
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'lists/list.html')
+        self.assertContains(resp, escape("You can't have an empty input"))
+
+    def test_invalid_input_not_saved(self):
+        ls = List.objects.create()
+        self.client.post('/lists/%d/' % ls.id, data={'todo-entry': ''})
+        self.assertEqual(Todo.objects.count(), 0)

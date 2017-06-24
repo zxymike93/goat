@@ -25,12 +25,16 @@ def new_list(request):
 
 def view_list(request, list_id):
     ls = List.objects.get(id=list_id)
+    context = {'list': ls}
     if request.method == 'POST':
-        Todo.objects.create(task=request.POST['todo-entry'], list=ls)
-        return redirect('/lists/%d/' % ls.id)
+        try:
+            todo = Todo(task=request.POST['todo-entry'], list=ls)
+            todo.full_clean()
+            todo.save()
+            return redirect('/lists/%d/' % ls.id)
+        except ValidationError:
+            context['error'] = "You can't have an empty input"
+
     todos = Todo.objects.filter(list=ls)
-    context = {
-        'list': ls,
-        'todos': todos
-    }
+    context['todos'] = todos
     return render(request, 'lists/list.html', context)
