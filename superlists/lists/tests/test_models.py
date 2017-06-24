@@ -6,6 +6,10 @@ from lists.models import List, Todo
 
 class ListAndTodoModelsTest(TestCase):
 
+    def test_get_absolute_url(self):
+        ls = List.objects.create()
+        self.assertEqual(ls.get_absolute_url(), '/lists/%d/' % (ls.id))
+
     def test_save_and_retrive_instances(self):
         list_ = List()
         list_.save()

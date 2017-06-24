@@ -20,7 +20,7 @@ def new_list(request):
         ls.delete()
         err = "You can't have an empty input"
         return render(request, 'lists/home_page.html', {'error': err})
-    return redirect('/lists/%d/' % ls.id)
+    return redirect(ls)
 
 
 def view_list(request, list_id):
@@ -31,7 +31,7 @@ def view_list(request, list_id):
             todo = Todo(task=request.POST['todo-entry'], list=ls)
             todo.full_clean()
             todo.save()
-            return redirect('/lists/%d/' % ls.id)
+            return redirect(ls)
         except ValidationError:
             context['error'] = "You can't have an empty input"
 
