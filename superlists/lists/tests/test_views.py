@@ -2,6 +2,7 @@ from django.core.urlresolvers import resolve
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.test import TestCase
+from django.utils.html import escape
 
 from lists.models import Todo, List
 from lists.views import home_page
@@ -37,6 +38,17 @@ class NewListViewTest(TestCase):
         self.assertEqual(resp.status_code, 302)
         ls = List.objects.first()
         self.assertRedirects(resp, ('/lists/%d/' % ls.id))
+
+    def test_validation_errors_are_sent_to_home_page(self):
+        resp = self.client.post('/lists/new/', data={'todo-entry': ''})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'lists/home_page.html')
+        self.assertContains(resp, escape("You can't have an empty input"))
+
+    def test_invalid_input_not_saved(self):
+        self.client.post('/lists/new/', data={'todo-entry': ''})
+        self.assertEqual(List.objects.count(), 0)
+        self.assertEqual(Todo.objects.count(), 0)
 
 
 class ListViewTest(TestCase):

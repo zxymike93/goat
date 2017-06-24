@@ -21,6 +21,11 @@
                 class="form-control input-lg"
                 placeholder="What do you want to do?">
           {% csrf_token %}
+          {% if error %}
+            <div class="form-group has-error">
+              <span class="help-block">{{ error }}</spam>
+            </div>
+          {% endif %}
         </form>
       </div><!-- text-center -->
     </div><!-- col-md-6 col-md-offset-3 jumbotron-->

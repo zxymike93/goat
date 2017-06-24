@@ -1,7 +1,8 @@
+from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 
 from lists.models import Todo, List
-from utils import log
+# from utils import log
 
 
 def home_page(request):
@@ -10,8 +11,15 @@ def home_page(request):
 
 def new_list(request):
     ls = List.objects.create()
-    todo = request.POST['todo-entry']
-    Todo.objects.create(task=todo, list=ls)
+    t = request.POST['todo-entry']
+    todo = Todo(task=t, list=ls)
+    try:
+        todo.full_clean()
+        todo.save()
+    except ValidationError:
+        ls.delete()
+        err = "You can't have an empty input"
+        return render(request, 'lists/home_page.html', {'error': err})
     return redirect('/lists/%d/' % ls.id)
 
 
