@@ -4,12 +4,15 @@ from django.template.loader import render_to_string
 from django.test import TestCase
 from django.utils.html import escape
 
+from lists.forms import TodoForm
 from lists.models import Todo, List
 from lists.views import home_page
 from utils import log
 
 
 class HomePageViewTest(TestCase):
+
+    maxDiff = None
 
     def test_root_url_mapping_to_home_page_view(self):
         found = resolve('/')
@@ -19,8 +22,16 @@ class HomePageViewTest(TestCase):
         req = HttpRequest()
         req.method = 'GET'
         resp = home_page(req)
-        html = render_to_string('lists/home_page.html')
-        self.assertEqual(resp.content.decode(), html)
+        html = render_to_string('lists/home_page.html', {'form': TodoForm})
+        self.assertMultiLineEqual(resp.content.decode(), html)
+
+    def test_home_page_renders_home_template(self):
+        resp = self.client.get('/')
+        self.assertTemplateUsed(resp, 'lists/home_page.html')
+
+    def test_home_page_uses_todo_form(self):
+        resp = self.client.get('/')
+        self.assertIsInstance(resp.context['form'], TodoForm)
 
 
 class NewListViewTest(TestCase):

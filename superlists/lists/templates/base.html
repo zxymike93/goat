@@ -16,10 +16,7 @@
       <div class="text-center">
         <h1>{% block header_text %}{% endblock %}</h1>
         <form action="{% block form_action %}{% endblock %}" method="post">
-          <input id="id-input-todo" 
-                name="todo-entry" 
-                class="form-control input-lg"
-                placeholder="What do you want to do?">
+          {{ form.task }}
           {% csrf_token %}
           {% if error %}
             <div class="form-group has-error">
