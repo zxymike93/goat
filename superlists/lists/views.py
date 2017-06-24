@@ -25,15 +25,12 @@ def new_list(request):
 
 def view_list(request, list_id):
     ls = List.objects.get(id=list_id)
+    if request.method == 'POST':
+        Todo.objects.create(task=request.POST['todo-entry'], list=ls)
+        return redirect('/lists/%d/' % ls.id)
     todos = Todo.objects.filter(list=ls)
     context = {
         'list': ls,
         'todos': todos
     }
     return render(request, 'lists/list.html', context)
-
-
-def add_todo(request, list_id):
-    ls = List.objects.get(id=list_id)
-    Todo.objects.create(task=request.POST['todo-entry'], list=ls)
-    return redirect('/lists/%d/' % ls.id)

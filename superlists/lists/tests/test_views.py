@@ -76,28 +76,27 @@ class ListViewTest(TestCase):
         self.assertNotContains(resp, todo3.task)
         self.assertNotContains(resp, todo4.task)
 
-
-class AddTodoViewTest(TestCase):
-
     def test_can_save_post_todo_to_its_own_list(self):
         other = List.objects.create()
         own = List.objects.create()
 
         self.client.post(
-            ('/lists/%d/add/' % own.id),
+            ('/lists/%d/' % own.id),
             data={'todo-entry': 'New todo in its own list'}
         )
+        self.assertEqual(Todo.objects.count(), 1)
+        # TODO: should use last not first()
         todo = Todo.objects.first()
         log('todo last', todo)
         self.assertEqual(todo.task, 'New todo in its own list')
         self.assertEqual(todo.list, own)
         self.assertNotEqual(todo.list, other)
 
-    def test_redirects_to_list_view(self):
+    def test_redirects_to_list_view_after_post(self):
         own = List.objects.create()
 
         resp = self.client.post(
-            ('/lists/%d/add/' % own.id),
+            ('/lists/%d/' % own.id),
             data={'todo-entry': 'New todo in its own list'}
         )
         self.assertRedirects(resp, ('/lists/%d/' % own.id))
