@@ -13,7 +13,7 @@ def home_page(request):
 
 def new_list(request):
     ls = List.objects.create()
-    t = request.POST['todo-entry']
+    t = request.POST['task']
     todo = Todo(task=t, list=ls)
     try:
         todo.full_clean()
@@ -30,7 +30,7 @@ def view_list(request, list_id):
     context = {'list': ls}
     if request.method == 'POST':
         try:
-            todo = Todo(task=request.POST['todo-entry'], list=ls)
+            todo = Todo(task=request.POST['task'], list=ls)
             todo.full_clean()
             todo.save()
             return redirect(ls)

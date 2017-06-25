@@ -15,7 +15,7 @@ class NewVisitorTest(FunctionalTest):
         header_text = self.browser.find_element_by_tag_name('h1').text
         self.assertIn('To-Do', header_text)
 
-        input = self.browser.find_element_by_id('id-input-todo')
+        input = self._todo_input()
         self.assertEqual(
             input.get_attribute('placeholder'),
             'What do you want to do?'
@@ -32,7 +32,7 @@ class NewVisitorTest(FunctionalTest):
 
         # have to re-find the input for another input test
         # or you'll get god knows what Error
-        input = self.browser.find_element_by_id('id-input-todo')
+        input = self._todo_input()
         input.send_keys('Use peacock feathers to make a fly')
         input.send_keys(Keys.ENTER)
         time.sleep(5)
@@ -51,7 +51,7 @@ class NewVisitorTest(FunctionalTest):
         self.assertNotIn('Buy peacock feathers', page_text)
         self.assertNotIn('make a fly', page_text)
 
-        input = self.browser.find_element_by_id('id-input-todo')
+        input = self._todo_input()
         input.send_keys('Buy milk')
         input.send_keys(Keys.ENTER)
 

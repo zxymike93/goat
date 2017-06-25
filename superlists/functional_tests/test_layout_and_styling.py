@@ -6,7 +6,7 @@ class LayoutAndStylingTest(FunctionalTest):
         self.browser.get(self.server_url)
         self.browser.set_window_size(1024, 768)
 
-        input = self.browser.find_element_by_id('id-input-todo')
+        input = self._todo_input()
         self.assertAlmostEqual(
             input.location['x'] + input.size['width'] / 2,
             512,
@@ -14,7 +14,7 @@ class LayoutAndStylingTest(FunctionalTest):
         )
         # see if it keeps center after post
         input.send_keys('testing for center\n')
-        input = self.browser.find_element_by_id('id-input-todo')
+        input = self._todo_input()
         self.assertAlmostEqual(
             input.location['x'] + input.size['width'] / 2,
             512,

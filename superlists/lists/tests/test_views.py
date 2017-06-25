@@ -37,7 +37,7 @@ class HomePageViewTest(TestCase):
 class NewListViewTest(TestCase):
 
     def test_can_save_post_in_db(self):
-        self.client.post('/lists/new/', {'todo-entry': 'A new list item'})
+        self.client.post('/lists/new/', {'task': 'A new list item'})
         # model saving test
         self.assertEqual(Todo.objects.count(), 1)
         first = Todo.objects.first()
@@ -45,19 +45,19 @@ class NewListViewTest(TestCase):
 
     def test_redirects_after_post(self):
         resp = self.client.post('/lists/new/',
-                                {'todo-entry': 'A new list item'})
+                                {'task': 'A new list item'})
         self.assertEqual(resp.status_code, 302)
         ls = List.objects.first()
         self.assertRedirects(resp, ('/lists/%d/' % ls.id))
 
     def test_validation_errors_are_sent_to_home_page(self):
-        resp = self.client.post('/lists/new/', data={'todo-entry': ''})
+        resp = self.client.post('/lists/new/', data={'task': ''})
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'lists/home_page.html')
         self.assertContains(resp, escape("You can't have an empty input"))
 
     def test_invalid_input_not_saved(self):
-        self.client.post('/lists/new/', data={'todo-entry': ''})
+        self.client.post('/lists/new/', data={'task': ''})
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Todo.objects.count(), 0)
 
@@ -93,7 +93,7 @@ class ListViewTest(TestCase):
 
         self.client.post(
             ('/lists/%d/' % own.id),
-            data={'todo-entry': 'New todo in its own list'}
+            data={'task': 'New todo in its own list'}
         )
         self.assertEqual(Todo.objects.count(), 1)
         # TODO: should use last not first()
@@ -108,7 +108,7 @@ class ListViewTest(TestCase):
 
         resp = self.client.post(
             ('/lists/%d/' % own.id),
-            data={'todo-entry': 'New todo in its own list'}
+            data={'task': 'New todo in its own list'}
         )
         self.assertRedirects(resp, ('/lists/%d/' % own.id))
 
@@ -121,7 +121,7 @@ class ListViewTest(TestCase):
         ls = List.objects.create()
         resp = self.client.post(
             '/lists/%d/' % ls.id,
-            data={'todo-entry': ''}
+            data={'task': ''}
         )
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'lists/list.html')
@@ -129,5 +129,5 @@ class ListViewTest(TestCase):
 
     def test_invalid_input_not_saved(self):
         ls = List.objects.create()
-        self.client.post('/lists/%d/' % ls.id, data={'todo-entry': ''})
+        self.client.post('/lists/%d/' % ls.id, data={'task': ''})
         self.assertEqual(Todo.objects.count(), 0)
