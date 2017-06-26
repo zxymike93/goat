@@ -4,6 +4,7 @@ from django.template.loader import render_to_string
 from django.test import TestCase
 from django.utils.html import escape
 
+from lists.forms import EMPTY_INPUT_ERROR
 from lists.forms import TodoForm
 from lists.models import Todo, List
 from lists.views import home_page
@@ -50,11 +51,18 @@ class NewListViewTest(TestCase):
         ls = List.objects.first()
         self.assertRedirects(resp, ('/lists/%d/' % ls.id))
 
-    def test_validation_errors_are_sent_to_home_page(self):
+    def test_for_invalid_input_renders_home_page(self):
         resp = self.client.post('/lists/new/', data={'task': ''})
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'lists/home_page.html')
-        self.assertContains(resp, escape("You can't have an empty input"))
+
+    def test_validation_errors_are_shown_on_home_page(self):
+        resp = self.client.post('/lists/new/', data={'task': ''})
+        self.assertContains(resp, escape(EMPTY_INPUT_ERROR))
+
+    def test_for_invalid_input_passes_form_to_template(self):
+        resp = self.client.post('/lists/new/', data={'task': ''})
+        self.assertIsInstance(resp.context['form'], TodoForm)
 
     def test_invalid_input_not_saved(self):
         self.client.post('/lists/new/', data={'task': ''})
@@ -117,17 +125,24 @@ class ListViewTest(TestCase):
         resp = self.client.get('/lists/%d/' % ls.id)
         self.assertEqual(resp.context['list'], ls)
 
-    def test_validation_errors_are_sent_to_list_page_itself(self):
+    def __post_invalid_input(self):
         ls = List.objects.create()
-        resp = self.client.post(
-            '/lists/%d/' % ls.id,
-            data={'task': ''}
-        )
+        resp = self.client.post('/lists/%d/' % ls.id, data={'task': ''})
+        return resp
+
+    def test_validation_errors_are_sent_to_list_page_itself(self):
+        resp = self.__post_invalid_input()
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'lists/list.html')
-        self.assertContains(resp, escape("You can't have an empty input"))
+
+    def test_for_invalid_input_shows_error(self):
+        resp = self.__post_invalid_input()
+        self.assertContains(resp, escape(EMPTY_INPUT_ERROR))
 
     def test_invalid_input_not_saved(self):
-        ls = List.objects.create()
-        self.client.post('/lists/%d/' % ls.id, data={'task': ''})
+        self.__post_invalid_input()
         self.assertEqual(Todo.objects.count(), 0)
+
+    def test_for_invalid_input_passes_form_to_template(self):
+        resp = self.__post_invalid_input()
+        self.assertIsInstance(resp.context['form'], TodoForm)

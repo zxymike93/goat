@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 
 from lists.forms import TodoForm
 from lists.models import Todo, List
-# from utils import log
+from utils import log
 
 
 def home_page(request):
@@ -12,31 +12,28 @@ def home_page(request):
 
 
 def new_list(request):
-    ls = List.objects.create()
-    t = request.POST['task']
-    todo = Todo(task=t, list=ls)
-    try:
-        todo.full_clean()
-        todo.save()
-    except ValidationError:
-        ls.delete()
-        err = "You can't have an empty input"
-        return render(request, 'lists/home_page.html', {'error': err})
-    return redirect(ls)
+    form = TodoForm(data=request.POST)
+    if form.is_valid():
+        ls = List.objects.create()
+        Todo.objects.create(task=request.POST['task'], list=ls)
+        return redirect(ls)
+    else:
+        return render(request, 'lists/home_page.html', {'form': form})
 
 
 def view_list(request, list_id):
     ls = List.objects.get(id=list_id)
-    context = {'list': ls}
+    form = TodoForm()
     if request.method == 'POST':
-        try:
-            todo = Todo(task=request.POST['task'], list=ls)
-            todo.full_clean()
-            todo.save()
+        form = TodoForm(data=request.POST)
+        if form.is_valid():
+            Todo.objects.create(task=request.POST['task'], list=ls)
             return redirect(ls)
-        except ValidationError:
-            context['error'] = "You can't have an empty input"
 
     todos = Todo.objects.filter(list=ls)
-    context['todos'] = todos
+    context = {
+        'list': ls,
+        'todos': todos,
+        'form': form
+    }
     return render(request, 'lists/list.html', context)

@@ -46,7 +46,7 @@ class FunctionalTest(StaticLiveServerTestCase):
 
     def _for_row_in_table(self, entry_text):
         time.sleep(10)
-        table = self._todo_input()
+        table = self.browser.find_element_by_id('id-table-todo')
         log('find id-table-todo', table)
         rows = table.find_elements_by_tag_name('tr')
         self.assertIn(

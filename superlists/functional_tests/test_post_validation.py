@@ -33,5 +33,3 @@ class ValidationTest(FunctionalTest):
         input.send_keys(Keys.ENTER)
         self._for_row_in_table('1: Buy milk')
         self._for_row_in_table('2: Make tea')
-
-        self.fail('Write me!')
