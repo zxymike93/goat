@@ -12,8 +12,11 @@ class Todo(models.Model):
 
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
-    task = models.TextField()
+    task = models.TextField(default='')
     list = models.ForeignKey(List, default=None)
+
+    class Meta:
+        unique_together = ('list', 'task')
 
     def __str__(self):
         return self.task
