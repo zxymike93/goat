@@ -1,3 +1,5 @@
+from unittest import skip
+
 from django.core.urlresolvers import resolve
 from django.http import HttpRequest
 from django.template.loader import render_to_string
@@ -71,6 +73,14 @@ class NewListViewTest(TestCase):
 
 
 class ListViewTest(TestCase):
+    """
+    Tests for views.view_list
+        test_duplicate_todo_validation_errors_end_up_on_lists_page:
+    """
+    def __post_invalid_input(self):
+        ls = List.objects.create()
+        resp = self.client.post('/lists/%d/' % ls.id, data={'task': ''})
+        return resp
 
     def test_uses_list_template(self):
         ls = List.objects.create()
@@ -125,11 +135,6 @@ class ListViewTest(TestCase):
         resp = self.client.get('/lists/%d/' % ls.id)
         self.assertEqual(resp.context['list'], ls)
 
-    def __post_invalid_input(self):
-        ls = List.objects.create()
-        resp = self.client.post('/lists/%d/' % ls.id, data={'task': ''})
-        return resp
-
     def test_validation_errors_are_sent_to_list_page_itself(self):
         resp = self.__post_invalid_input()
         self.assertEqual(resp.status_code, 200)
@@ -146,3 +151,17 @@ class ListViewTest(TestCase):
     def test_for_invalid_input_passes_form_to_template(self):
         resp = self.__post_invalid_input()
         self.assertIsInstance(resp.context['form'], TodoForm)
+
+    @skip
+    def test_duplicate_todo_validation_errors_end_up_on_lists_page(self):
+        ls = List.objects.create()
+        Todo.objects.create(list=ls, task='textey')
+        resp = self.client.post(
+            '/lists/%d/' % ls.id,
+            data={'task': 'textey'}
+        )
+
+        err_msg = escape("You've already got this in your list")
+        self.assertContains(resp, err_msg)
+        self.assertTemplateUsed(resp, 'lists/list.html')
+        self.assertEqual(Todo.objects.all().count(), 1)
