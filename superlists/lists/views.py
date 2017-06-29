@@ -1,9 +1,9 @@
-from django.core.exceptions import ValidationError
+# from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 
-from lists.forms import TodoForm
+from lists.forms import TodoForm, ExistingListTodoForm
 from lists.models import Todo, List
-from utils import log
+# from utils import log
 
 
 def home_page(request):
@@ -23,11 +23,11 @@ def new_list(request):
 
 def view_list(request, list_id):
     ls = List.objects.get(id=list_id)
-    form = TodoForm()
+    form = ExistingListTodoForm(for_list=ls)
     if request.method == 'POST':
-        form = TodoForm(data=request.POST)
+        form = ExistingListTodoForm(for_list=ls, data=request.POST)
         if form.is_valid():
-            form.save(for_list=ls)
+            form.save()
             return redirect(ls)
 
     todos = Todo.objects.filter(list=ls)

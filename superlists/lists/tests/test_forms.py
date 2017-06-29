@@ -46,3 +46,9 @@ class ExistingListTodoFormTest(TestCase):
         form = ExistingListTodoForm(for_list=ls, data={'task': 'no twins'})
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors['task'], [DUPLICATE_INPUT_ERROR])
+
+    def test_form_save(self):
+        ls = List.objects.create()
+        form = ExistingListTodoForm(for_list=ls, data={'task': 'hi'})
+        todo = form.save()
+        self.assertEqual(todo, Todo.objects.last())

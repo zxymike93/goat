@@ -40,3 +40,6 @@ class ExistingListTodoForm(TodoForm):
         except ValidationError as e:
             e.error_dict = {'task': [DUPLICATE_INPUT_ERROR]}
             self._update_errors(e)
+
+    def save(self):
+        return forms.models.ModelForm.save(self)

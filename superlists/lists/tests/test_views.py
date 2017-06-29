@@ -1,4 +1,4 @@
-from unittest import skip
+# from unittest import skip
 
 from django.core.urlresolvers import resolve
 from django.http import HttpRequest
@@ -6,8 +6,8 @@ from django.template.loader import render_to_string
 from django.test import TestCase
 from django.utils.html import escape
 
-from lists.forms import EMPTY_INPUT_ERROR
-from lists.forms import TodoForm
+from lists.forms import EMPTY_INPUT_ERROR, DUPLICATE_INPUT_ERROR
+from lists.forms import TodoForm, ExistingListTodoForm
 from lists.models import Todo, List
 from lists.views import home_page
 from utils import log
@@ -150,9 +150,8 @@ class ListViewTest(TestCase):
 
     def test_for_invalid_input_passes_form_to_template(self):
         resp = self.__post_invalid_input()
-        self.assertIsInstance(resp.context['form'], TodoForm)
+        self.assertIsInstance(resp.context['form'], ExistingListTodoForm)
 
-    @skip
     def test_duplicate_todo_validation_errors_end_up_on_lists_page(self):
         ls = List.objects.create()
         Todo.objects.create(list=ls, task='textey')
@@ -161,7 +160,7 @@ class ListViewTest(TestCase):
             data={'task': 'textey'}
         )
 
-        err_msg = escape("You've already got this in your list")
+        err_msg = escape(DUPLICATE_INPUT_ERROR)
         self.assertContains(resp, err_msg)
         self.assertTemplateUsed(resp, 'lists/list.html')
         self.assertEqual(Todo.objects.all().count(), 1)
