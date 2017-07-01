@@ -18,17 +18,16 @@
 
     <script src="http://code.jquery.com/jquery.min.js"></script>
     <script src="qunit.js"></script>
+    <script src="../list.js"></script>
     <script>
       /* global $, test, equal */
-      test("smoke test", function() {
-        equal($('.has-error').is(':visible'), true);
-        $('.has-error').hide();
+      test("errors should be hidden on keypress", function() {
+        $('input').trigger('keypress');
         equal($('.has-error').is(':visible'), false);
       });
-      test("smoke test 2", function() {
+
+      test("errors not be hidden unless there is a keypress", function() {
         equal($('.has-error').is(':visible'), true);
-        $('.has-error').hide();
-        equal($('.has-error').is(':visible'), false);
       });
     </script>
 </body>
