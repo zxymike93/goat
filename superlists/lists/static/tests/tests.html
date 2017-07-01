@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Javascript Tests</title>
+    <link rel="stylesheet" href="qunit.css">
+</head>
+
+<body>
+    <div id="qunit"></div>
+    <div id="qunit-fixture">
+      <!-- 每次运行测试前 jQuery 都会还原这个固件元素的内容 -->
+      <form>
+        <input name="text">
+        <div class="has-error">Error Text</div>
+      </form>
+    </div><!-- qunit-fixture -->
+
+    <script src="http://code.jquery.com/jquery.min.js"></script>
+    <script src="qunit.js"></script>
+    <script>
+      /* global $, test, equal */
+      test("smoke test", function() {
+        equal($('.has-error').is(':visible'), true);
+        $('.has-error').hide();
+        equal($('.has-error').is(':visible'), false);
+      });
+      test("smoke test 2", function() {
+        equal($('.has-error').is(':visible'), true);
+        $('.has-error').hide();
+        equal($('.has-error').is(':visible'), false);
+      });
+    </script>
+</body>
+</html>
