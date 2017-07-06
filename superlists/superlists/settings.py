@@ -108,7 +108,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, '../static')
 
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'zxymike93@gmail.com'
+SERVER_EMAIL = 'zxymike93@163.com'
+EMAIL_HOST = 'smtp.163.com'
+EMAIL_HOST_USER = 'zxymike93@163.com'
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
+EMAIL_PORT = '25'
 EMAIL_USE_TLS = True

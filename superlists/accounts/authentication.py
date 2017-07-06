@@ -11,7 +11,7 @@ class PasswordlessAuthenticationBackend(object):
         if not has_token:
             print('no token found', file=sys.stderr)
             return None
-        token = Token.object.get(uid=uid)
+        token = Token.objects.get(uid=uid)
         print('got token', file=sys.stderr)
         try:
             user = ListUser.objects.get(email=token.email)
@@ -21,5 +21,5 @@ class PasswordlessAuthenticationBackend(object):
             print('new user', file=sys.stderr)
             return ListUser.objects.create(email=token.email)
 
-        def get_user(self, email):
-            return ListUser.objects.get(email=email)
+    def get_user(self, email):
+        return ListUser.objects.get(email=email)

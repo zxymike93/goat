@@ -19,7 +19,7 @@ def send_login_email(request):
     send_mail(
         'Your login link for Superlists',
         f'Use this link to log in:\n\n{url}',
-        'noreply@superlists',
+        'zxymike93@163.com',
         [email],
     )
     return render(request, 'login_email_sent.html')
