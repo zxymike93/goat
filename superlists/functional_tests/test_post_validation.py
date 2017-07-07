@@ -34,6 +34,7 @@ class ValidationTest(FunctionalTest):
         input = self._todo_input()
         input.send_keys('')
         input.send_keys(Keys.ENTER)
+        time.sleep(10)
         err = self.__get_error_element()
         self.assertEqual(err.text, "You can't have an empty input")
         # you enter something again # ok
