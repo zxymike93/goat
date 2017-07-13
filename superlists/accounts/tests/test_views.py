@@ -1,6 +1,8 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 
-import accounts.views
+from accounts.models import Token
 
 
 class SendLoginEmailViewTest(TestCase):
@@ -12,30 +14,66 @@ class SendLoginEmailViewTest(TestCase):
         )
         self.assertRedirects(resp, '/')
 
-    def test_sends_mail_to_address_from_post(self):
-        self.send_mail_called = False
+    @patch('accounts.views.send_mail')
+    def test_sends_mail_to_address_from_post(self, mock_send_mail):
+        """使用 patch 装饰器
+        运行这个测试函数之前会把 send_mail 赋值为 mock 函数
+        运行结束之后 send_mail 回到原有值
+        (简单来说就是装饰器该有的特性)
 
-        def fake_send_mail(subject, body, from_email, to_email_list):
-            """
-            This is a mock
-            """
-            self.send_mail_called = True
-            self.subject = subject
-            self.body = body
-            self.from_email = from_email
-            self.to_email_list = to_email_list
-
-        # 要这样引用才能引入完整的 accounts.views 命名空间
-        accounts.views.send_mail = fake_send_mail
-
-        # 于是现在 invoke accounts.views.send_login_email 这个 function 的时候
-        # 才会动态改变 self.send_mail_called 属性
+        第二个参数是一个 mock 对象，由@patch得到
+        """
         self.client.post(
             '/accounts/send_login_email/',
             data={'email': 'edith@example.com'}
         )
 
-        self.assertTrue(self.send_mail_called)
-        self.assertEqual(self.subject, 'Your login link for Superlists')
-        self.assertEqual(self.from_email, 'noreply@superlists')
-        self.assertEqual(self.to_email_list, ['edith@example.com'])
+        self.assertTrue(mock_send_mail)
+        (subject, body, from_email, to_list), kwargs = mock_send_mail.call_args
+        self.assertEqual(subject, 'Your login link for Superlists')
+        self.assertEqual(from_email, 'noreply@superlists')
+        self.assertEqual(to_list, ['edith@example.com'])
+
+    def test_adds_success_message(self):
+        """
+        跟随 redirect
+        """
+        resp = self.client.post(
+            '/accounts/send_login_email/',
+            data={'email': 'edith@example.com'},
+            follow=True
+        )
+        msg = list(resp.context['messages'])[0]
+
+        self.assertEqual(
+            msg.message,
+            "Check your email, we've sent you a link you can use to log in."
+        )
+        self.assertEqual(msg.tags, 'success')
+
+    def test_creates_token_associated_with_email(self):
+        self.client.post(
+            '/accounts/send_login_email/',
+            data={'email': 'edith@example.com'},
+        )
+        token = Token.objects.last()
+        self.assertEqual(token.email, 'edith@example.com')
+
+    @patch('accounts.views.send_mail')
+    def test_sends_link_to_login_using_token_uid(self, mock_send_mail):
+        self.client.post(
+            '/accounts/send_login_email/',
+            data={'email': 'edith@example.com'},
+        )
+        token = Token.objects.last()
+        expected_url = ('http://testserver/'
+                        'accounts/login?token={}').format(token.uid)
+        (subject, body, from_email, to_list), kwargs = mock_send_mail.call_args
+        self.assertIn(expected_url, body)
+
+
+class LoginViewTest(TestCase):
+
+    def test_redirects_to_home_page(self):
+        resp = self.client.get('/accounts/login?token=abcd123')
+        self.assertRedirects(resp, '/')
