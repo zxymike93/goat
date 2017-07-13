@@ -1,10 +1,10 @@
-from django.contrib.auth import get_user_model
+from django.contrib import auth
 from django.test import TestCase
 
 from accounts.models import Token
 
 
-User = get_user_model()
+User = auth.get_user_model()
 TEST_EMAIL = 'test@example.com'
 
 
@@ -17,6 +17,13 @@ class UserModelTest(TestCase):
     def test_email_is_pk(self):
         user = User(email='test@example.com')
         self.assertEqual(user.pk, 'test@example.com')
+
+    def test_no_problem_with_auth_login(self):
+        user = User.objects.create(email='edith@example.com')
+        user.backend = ''
+        req = self.client.request().wsgi_request
+        # should not raise `last_login`
+        auth.login(req, user)
 
 
 class TokenModelTest(TestCase):
