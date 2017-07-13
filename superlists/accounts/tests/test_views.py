@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import patch, call
 
 from django.test import TestCase
 
@@ -77,3 +77,19 @@ class LoginViewTest(TestCase):
     def test_redirects_to_home_page(self):
         resp = self.client.get('/accounts/login?token=abcd123')
         self.assertRedirects(resp, '/')
+
+    @patch('accounts.views.auth')
+    def test_calls_authenticate_with_uid_from_get_request(self, mock_auth):
+        self.client.get('/accounts/login?token=abc123')
+        self.assertEqual(
+            mock_auth.authenticate.call_args,
+            call(uid='abc123')
+        )
+
+    @patch('accounts.views.auth')
+    def test_calls_auth_login_with_user_if_there_is_one(self, mock_auth):
+        resp = self.client.get('/accounts/login?token=abc123')
+        self.assertEqual(
+            mock_auth.login.call_args,
+            call(resp.wsgi_request, mock_auth.authenticate.return_value)
+        )

@@ -43,6 +43,10 @@ INSTALLED_APPS = (
 
 AUTH_USER_MODEL = 'accounts.User'
 
+AUTHENTICATION_BACKENDS = [
+    'accounts.authentication.PasswordlessAuthenticationBackend',
+]
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
