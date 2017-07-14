@@ -1,4 +1,4 @@
-# from unittest import skip
+from unittest import skip
 
 from django.core.urlresolvers import resolve
 from django.http import HttpRequest
@@ -17,10 +17,12 @@ class HomePageViewTest(TestCase):
 
     maxDiff = None
 
+    @skip
     def test_root_url_mapping_to_home_page_view(self):
         found = resolve('/')
         self.assertEqual(found.func, home_page)
 
+    @skip
     def test_home_page_render_correct_html(self):
         req = HttpRequest()
         req.method = 'GET'
