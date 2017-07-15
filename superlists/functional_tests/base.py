@@ -48,16 +48,6 @@ class FunctionalTest(StaticLiveServerTestCase):
             return webdriver.Firefox(
                 executable_path='/Applications/geckodriver')
 
-    def _for_row_in_table(self, entry_text):
-        time.sleep(10)
-        table = self.browser.find_element_by_id('id-table-todo')
-        log('find id-table-todo', table)
-        rows = table.find_elements_by_tag_name('tr')
-        self.assertIn(
-            entry_text,
-            [row.text for row in rows]
-        )
-
     def _todo_input(self):
         return self.browser.find_element_by_id('id_task')
 
@@ -65,6 +55,7 @@ class FunctionalTest(StaticLiveServerTestCase):
         """显式等待 0.5*10秒
         用于在页面寻找一个元素
         或者一个断言
+        (接收一个函数作为参数，try调用它，调用成功作为return)
         """
         start_time = time.time()
         while True:
@@ -75,16 +66,46 @@ class FunctionalTest(StaticLiveServerTestCase):
                     raise e
                 time.sleep(0.5)
 
-    def _wait_to_be_logged_in(self, email):
-        self._wait_for(
-            lambda: self.browser.find_element_by_link_text('Log out')
+    def wait(fn):
+        """
+        @wait 相当于
+        >>> wait(_wait_to_be_logged_in)
+        >>> return modified_fn
+        _wait_to_be_logged_in 已经作为参数传入 modified_fn 中
+        _wait_to_be_logged_in() 才调用，相当于
+        >>> wait(_wait_to_be_logged_in)()
+        也就是
+        >>> modified_fn()
+        """
+        def modified_fn(*args, **kwargs):
+            start_time = time.time()
+            while True:
+                try:
+                    return fn(*args, **kwargs)
+                except (AssertionError, WebDriverException) as e:
+                    if time.time() - start_time > MAX_WAIT:
+                        raise e
+                    time.sleep(0.5)
+        return modified_fn
+
+    @wait
+    def _for_row_in_table(self, entry_text):
+        table = self.browser.find_element_by_id('id-table-todo')
+        log('find id-table-todo', table)
+        rows = table.find_elements_by_tag_name('tr')
+        self.assertIn(
+            entry_text,
+            [row.text for row in rows]
         )
+
+    @wait
+    def _wait_to_be_logged_in(self, email):
+        self.browser.find_element_by_link_text('Log out')
         navbar = self.browser.find_element_by_css_selector('.navbar')
         self.assertIn(email, navbar.text)
 
+    @wait
     def _wait_to_be_logged_out(self, email):
-        self._wait_for(
-            lambda: self.browser.find_element_by_name('email')
-        )
+        self.browser.find_element_by_name('email')
         navbar = self.browser.find_element_by_css_selector('.navbar')
         self.assertNotIn(email, navbar.text)
