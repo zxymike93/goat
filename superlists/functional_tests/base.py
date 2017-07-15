@@ -40,16 +40,6 @@ class FunctionalTest(StaticLiveServerTestCase):
     def tearDown(self):
         self.browser.quit()
 
-    def wait_for(self, fn):
-        start_time = time.time()
-        while True:
-            try:
-                return fn()
-            except (AssertionError, WebDriverException) as e:
-                if time.time() - start_time > MAX_WAIT:
-                    raise e
-                time.sleep(0.5)
-
     def _choose_webdriver(self):
         if 'Ubuntu' in platform.platform():
             return webdriver.Firefox(
@@ -70,3 +60,31 @@ class FunctionalTest(StaticLiveServerTestCase):
 
     def _todo_input(self):
         return self.browser.find_element_by_id('id_task')
+
+    def _wait_for(self, fn):
+        """显式等待 0.5*10秒
+        用于在页面寻找一个元素
+        或者一个断言
+        """
+        start_time = time.time()
+        while True:
+            try:
+                return fn()
+            except (AssertionError, WebDriverException) as e:
+                if time.time() - start_time > MAX_WAIT:
+                    raise e
+                time.sleep(0.5)
+
+    def _wait_to_be_logged_in(self, email):
+        self._wait_for(
+            lambda: self.browser.find_element_by_link_text('Log out')
+        )
+        navbar = self.browser.find_element_by_css_selector('.navbar')
+        self.assertIn(email, navbar.text)
+
+    def _wait_to_be_logged_out(self, email):
+        self._wait_for(
+            lambda: self.browser.find_element_by_name('email')
+        )
+        navbar = self.browser.find_element_by_css_selector('.navbar')
+        self.assertNotIn(email, navbar.text)
