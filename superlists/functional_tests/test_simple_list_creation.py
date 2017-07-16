@@ -35,7 +35,6 @@ class NewVisitorTest(FunctionalTest):
         input = self._todo_input()
         input.send_keys('Use peacock feathers to make a fly')
         input.send_keys(Keys.ENTER)
-        time.sleep(5)
         self._for_row_in_table('2: Use peacock feathers to make a fly')
 
         #

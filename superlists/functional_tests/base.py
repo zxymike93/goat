@@ -51,21 +51,6 @@ class FunctionalTest(StaticLiveServerTestCase):
     def _todo_input(self):
         return self.browser.find_element_by_id('id_task')
 
-    def _wait_for(self, fn):
-        """显式等待 0.5*10秒
-        用于在页面寻找一个元素
-        或者一个断言
-        (接收一个函数作为参数，try调用它，调用成功作为return)
-        """
-        start_time = time.time()
-        while True:
-            try:
-                return fn()
-            except (AssertionError, WebDriverException) as e:
-                if time.time() - start_time > MAX_WAIT:
-                    raise e
-                time.sleep(0.5)
-
     def wait(fn):
         """
         @wait 相当于
@@ -89,6 +74,10 @@ class FunctionalTest(StaticLiveServerTestCase):
         return modified_fn
 
     @wait
+    def _wait_for(self, fn):
+        return fn()
+
+    @wait
     def _for_row_in_table(self, entry_text):
         table = self.browser.find_element_by_id('id-table-todo')
         log('find id-table-todo', table)
@@ -109,3 +98,7 @@ class FunctionalTest(StaticLiveServerTestCase):
         self.browser.find_element_by_name('email')
         navbar = self.browser.find_element_by_css_selector('.navbar')
         self.assertNotIn(email, navbar.text)
+
+    @wait
+    def _get_error_message(self):
+        return self.browser.find_element_by_css_selector('.has-error')

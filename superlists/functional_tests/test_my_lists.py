@@ -10,23 +10,31 @@ User = get_user_model()
 
 
 class MyListTest(FunctionalTest):
-
+    """
+    __create_pre_authenticated_session: 辅助函数
+    test_create_pre_authenticated_session_create_session_for_a_user:
+        测试辅助函数能成功生成cookie
+    """
     def __create_pre_authenticated_session(self, email):
         user = User.objects.create(email=email)
         # session 类
-        # request headers 中用于验证身份，格式如下：
-        # Cookie:
-        #     sessionid=90s9olod6nppgfgk8rfq3a5injvtvmpa;
-        #     csrftoken=rAqDLBTQR8QQdXII3iLXEGTugFYxeaoF
         session = SessionStore()
+        # SESSION_KEY == '_auth_user_id'
         session[SESSION_KEY] = user.pk
+        # BACKEND_SESSION_KEY == '_auth_user_backend'
+        # settings.AUTHENTICATION_BACKENDS[0] ==
+        # ['accounts.authentication.PasswordlessAuthenticationBackend']
         session[BACKEND_SESSION_KEY] = settings.AUTHENTICATION_BACKENDS[0]
         session.save()
 
         self.browser.get(self.server_url + '/unavailable_url/')
+        # request headers 中用于验证身份，格式如下：
+        # Cookie:
+        #     sessionid=90s9olod6nppgfgk8rfq3a5injvtvmpa;
+        #     csrftoken=rAqDLBTQR8QQdXII3iLXEGTugFYxeaoF
         self.browser.add_cookie(
             {
-                'name': settings.SESSION_COOKIE_NAME,
+                'name': settings.SESSION_COOKIE_NAME,  # 'sessionid'
                 'value': session.session_key,
                 'path': '/'
             }
