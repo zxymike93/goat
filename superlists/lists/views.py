@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 
 from lists.forms import TodoForm, ExistingListTodoForm
 from lists.models import Todo, List
-# from utils import log
+from utils import log
 
 
 def home_page(request):
@@ -37,3 +37,8 @@ def view_list(request, list_id):
         'form': form
     }
     return render(request, 'lists/list.html', context)
+
+
+def my_lists(request, email):
+    log('EMAIL', email)
+    return render(request, 'lists/my_lists.html')

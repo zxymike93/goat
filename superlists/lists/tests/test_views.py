@@ -166,3 +166,10 @@ class ListViewTest(TestCase):
         self.assertContains(resp, err_msg)
         self.assertTemplateUsed(resp, 'lists/list.html')
         self.assertEqual(Todo.objects.all().count(), 1)
+
+
+class MyListsTest(TestCase):
+
+    def test_my_lists_url_renders_my_lists_template(self):
+        resp = self.client.get('/lists/users/a@b.com/')
+        self.assertTemplateUsed(resp, 'lists/my_lists.html')

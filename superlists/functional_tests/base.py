@@ -5,6 +5,7 @@ import time
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.keys import Keys
 
 from utils import log
 
@@ -48,9 +49,6 @@ class FunctionalTest(StaticLiveServerTestCase):
             return webdriver.Firefox(
                 executable_path='/Applications/geckodriver')
 
-    def _todo_input(self):
-        return self.browser.find_element_by_id('id_task')
-
     def wait(fn):
         """
         @wait 相当于
@@ -72,6 +70,19 @@ class FunctionalTest(StaticLiveServerTestCase):
                         raise e
                     time.sleep(0.5)
         return modified_fn
+
+    def _todo_input(self):
+        return self.browser.find_element_by_id('id_task')
+
+    def _add_todo(self, task):
+        num_rows = len(
+            self.browser.find_elements_by_css_selector('#id-table-todo tr')
+        )
+        input = self._todo_input()
+        input.send_keys(task)
+        input.send_keys(Keys.ENTER)
+        num_task = num_rows + 1
+        self._for_row_in_table('{}: {}'.format(num_task, task))
 
     @wait
     def _wait_for(self, fn):
