@@ -24,6 +24,12 @@ class ListModelTest(TestCase):
     def test_list_owner_is_optional(self):
         List.objects.create()  # should not raise
 
+    def test_list_name_is_the_first_todo(self):
+        ls = List.objects.create()
+        Todo.objects.create(list=ls, task='first todo')
+        Todo.objects.create(list=ls, task='second todo')
+        self.assertEqual(ls.name, 'first todo')
+
 
 class TodoModelsTest(TestCase):
     """

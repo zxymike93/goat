@@ -66,7 +66,7 @@ class MyListTest(FunctionalTest):
             lambda: self.browser.find_element_by_link_text('simens')
         )
         # return to first list
-        self.browser.find_element_by_link_text('I got hired')
+        self.browser.find_element_by_link_text('simens').click()
         self._wait_for(
             lambda: self.assertEqual(self.browser.current_url, first_list_url)
         )
@@ -87,6 +87,6 @@ class MyListTest(FunctionalTest):
         # logout
         self.browser.find_element_by_link_text('Log out').click()
         self._wait_for(lambda: self.assertEqual(
-            self.browser.find_element_by_link_text('My lists'),
+            self.browser.find_elements_by_link_text('My lists'),
             []
         ))

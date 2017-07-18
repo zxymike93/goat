@@ -9,6 +9,10 @@ class List(models.Model):
         null=True
     )
 
+    @property
+    def name(self):
+        return self.todo_set.first().task
+
     def get_absolute_url(self):
         return reverse('view_list', args=[self.id])
 
