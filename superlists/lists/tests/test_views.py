@@ -1,6 +1,7 @@
 from unittest import skip
 
 from django.core.urlresolvers import resolve
+from django.contrib.auth import get_user_model
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.test import TestCase
@@ -11,6 +12,9 @@ from lists.forms import TodoForm, ExistingListTodoForm
 from lists.models import Todo, List
 from lists.views import home_page
 from utils import log
+
+
+User = get_user_model()
 
 
 class HomePageViewTest(TestCase):
@@ -72,6 +76,14 @@ class NewListViewTest(TestCase):
         self.client.post('/lists/new/', data={'task': ''})
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Todo.objects.count(), 0)
+
+    def test_list_owner_is_saved_if_user_is_authenticated(self):
+        user = User.objects.create(email='a@b.com')
+        # make the user logged in
+        self.client.force_login(user)
+        self.client.post('/lists/new/', data={'task': 'test'})
+        ls = List.objects.last()
+        self.assertEqual(ls.user, user)
 
 
 class ListViewTest(TestCase):
@@ -168,8 +180,15 @@ class ListViewTest(TestCase):
         self.assertEqual(Todo.objects.all().count(), 1)
 
 
-class MyListsTest(TestCase):
+class MyListsViewTest(TestCase):
 
     def test_my_lists_url_renders_my_lists_template(self):
+        User.objects.create(email='a@b.com')
         resp = self.client.get('/lists/users/a@b.com/')
         self.assertTemplateUsed(resp, 'lists/my_lists.html')
+
+    def test_passes_correct_user_to_template(self):
+        User.objects.create(email='wrong@user.com')
+        correct_user = User.objects.create(email='a@b.com')
+        resp = self.client.get('/lists/users/a@b.com/')
+        self.assertEqual(resp.context['user'], correct_user)

@@ -1,7 +1,11 @@
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from lists.models import List, Todo
+
+
+User = get_user_model()
 
 
 class ListModelTest(TestCase):
@@ -11,6 +15,14 @@ class ListModelTest(TestCase):
     def test_get_absolute_url(self):
         ls = List.objects.create()
         self.assertEqual(ls.get_absolute_url(), '/lists/%d/' % (ls.id))
+
+    def test_lists_can_have_owners(self):
+        user = User.objects.create(email='a@b.com')
+        ls = List.objects.create(user=user)
+        self.assertIn(ls, user.list_set.all())
+
+    def test_list_owner_is_optional(self):
+        List.objects.create()  # should not raise
 
 
 class TodoModelsTest(TestCase):
