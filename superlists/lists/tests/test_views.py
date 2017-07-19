@@ -1,5 +1,7 @@
 from unittest import skip
+from unittest.mock import patch
 
+from django.contrib.auth import get_user_model
 from django.core.urlresolvers import resolve
 from django.http import HttpRequest
 from django.template.loader import render_to_string
@@ -11,6 +13,9 @@ from lists.forms import TodoForm, ExistingListTodoForm
 from lists.models import Todo, List
 from lists.views import home_page
 from utils import log
+
+
+User = get_user_model()
 
 
 class HomePageViewTest(TestCase):
@@ -72,6 +77,25 @@ class NewListViewTest(TestCase):
         self.client.post('/lists/new/', data={'task': ''})
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Todo.objects.count(), 0)
+
+    @patch('lists.views.List')
+    @patch('lists.views.TodoForm')
+    def test_list_owener_is_saved_if_user_is_authenticated(
+        self, MockTodoFormClass, MockListClass
+    ):
+        user = User.objects.create(email='a@b.com')
+        self.client.force_login(user)
+        # mock 的 Class.return_value 是一个 mock 实例
+        mock_ls = MockListClass.return_value
+
+        def check_user_assigned():
+            self.assertEqual(mock_ls.user, user)
+        # mock_ls.save() 之前，会 assert side_effect 是否执行
+        mock_ls.save.side_effect = check_user_assigned
+
+        self.client.post('/lists/new/', data={'task': 'new todo'})
+        # 检查 save() 确实被执行了
+        mock_ls.save.assert_called_once_with()
 
 
 class ListViewTest(TestCase):
@@ -168,7 +192,7 @@ class ListViewTest(TestCase):
         self.assertEqual(Todo.objects.all().count(), 1)
 
 
-class MyListsTest(TestCase):
+class MyListsViewTest(TestCase):
 
     def test_my_lists_url_renders_my_lists_template(self):
         resp = self.client.get('/lists/users/a@b.com/')
