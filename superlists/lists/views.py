@@ -1,13 +1,21 @@
 # from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 
-from lists.forms import TodoForm, ExistingListTodoForm
+from lists.forms import TodoForm, ExistingListTodoForm, NewListForm
 from lists.models import Todo, List
 from utils import log
 
 
 def home_page(request):
     form = TodoForm()
+    return render(request, 'lists/home_page.html', {'form': form})
+
+
+def new_list2(request):
+    form = NewListForm(data=request.POST)
+    if form.is_valid():
+        ls = form.save(user=request.user)
+        return redirect(ls)
     return render(request, 'lists/home_page.html', {'form': form})
 
 
