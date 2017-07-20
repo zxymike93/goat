@@ -1,7 +1,9 @@
+import unittest
 from unittest import skip
+from unittest.mock import patch, Mock
 
-from django.core.urlresolvers import resolve
 from django.contrib.auth import get_user_model
+from django.core.urlresolvers import resolve
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.test import TestCase
@@ -11,6 +13,7 @@ from lists.forms import EMPTY_INPUT_ERROR, DUPLICATE_INPUT_ERROR
 from lists.forms import TodoForm, ExistingListTodoForm
 from lists.models import Todo, List
 from lists.views import home_page
+from lists.views import new_list2
 from utils import log
 
 
@@ -43,7 +46,61 @@ class HomePageViewTest(TestCase):
         self.assertIsInstance(resp.context['form'], TodoForm)
 
 
-class NewListViewTest(TestCase):
+# mock 一个根本不存在的 Form 类
+@patch('lists.views.NewListForm')
+class NewListViewUnitTest(unittest.TestCase):
+
+    def setUp(self):
+        self.request = HttpRequest()
+        self.request.POST['task'] = 'new list'
+        self.request.user = Mock()
+
+    def test_passes_post_data_to_new_list_form(self, MockNewListForm):
+        """
+        看看是否用到 NewListForm
+        """
+        new_list2(self.request)
+        MockNewListForm.assert_called_once_with(data=self.request.POST)
+
+    def test_saves_form_with_user_if_form_valid(self, MockNewListForm):
+        mock_form = MockNewListForm.return_value
+        # set mock_form valid
+        mock_form.is_valid.return_value = True
+        new_list2(self.request)
+        mock_form.save.assert_called_once_with(user=self.request.user)
+
+    @patch('lists.views.redirect')
+    def test_redirects_to_form_returned_object_if_form_valid(
+        self, mock_redirect, MockNewListForm
+    ):
+        mock_form = MockNewListForm.return_value
+        mock_form.is_valid.return_value = True
+        resp = new_list2(self.request)
+        self.assertEqual(resp, mock_redirect.return_value)
+        mock_redirect.assert_called_once_with(mock_form.save.return_value)
+
+    @patch('lists.views.render')
+    def test_renders_home_template_with_form_if_form_invalid(
+        self, mock_render, MockNewListForm
+    ):
+        mock_form = MockNewListForm.return_value
+        mock_form.is_valid.return_value = False
+        resp = new_list2(self.request)
+        self.assertEqual(resp, mock_render.return_value)
+        mock_render.assert_called_once_with(
+            self.request,
+            'lists/home_page.html',
+            {'form': mock_form},
+        )
+
+    def test_does_not_save_if_form_invalid(self, MockNewListForm):
+        mock_form = MockNewListForm.return_value
+        mock_form.is_valid.return_value = False
+        new_list2(self.request)
+        self.assertFalse(mock_form.save.called)
+
+
+class NewListViewIntegratedTest(TestCase):
 
     def test_can_save_post_in_db(self):
         self.client.post('/lists/new/', {'task': 'A new list item'})
@@ -77,11 +134,11 @@ class NewListViewTest(TestCase):
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Todo.objects.count(), 0)
 
+    @skip
     def test_list_owner_is_saved_if_user_is_authenticated(self):
         user = User.objects.create(email='a@b.com')
-        # make the user logged in
         self.client.force_login(user)
-        self.client.post('/lists/new/', data={'task': 'test'})
+        self.client.post('/lists/new/', data={'task': 'new todo'})
         ls = List.objects.last()
         self.assertEqual(ls.user, user)
 

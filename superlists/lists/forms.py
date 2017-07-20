@@ -43,3 +43,7 @@ class ExistingListTodoForm(TodoForm):
 
     def save(self):
         return forms.models.ModelForm.save(self)
+
+
+class NewListForm(object):
+    pass
