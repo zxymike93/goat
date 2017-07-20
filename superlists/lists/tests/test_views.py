@@ -13,7 +13,7 @@ from lists.forms import EMPTY_INPUT_ERROR, DUPLICATE_INPUT_ERROR
 from lists.forms import TodoForm, ExistingListTodoForm
 from lists.models import Todo, List
 from lists.views import home_page
-from lists.views import new_list2
+from lists.views import new_list
 from utils import log
 
 
@@ -63,7 +63,7 @@ class NewListViewUnitTest(unittest.TestCase):
         """
         看看是否用到 NewListForm
         """
-        new_list2(self.request)
+        new_list(self.request)
         MockNewListForm.assert_called_once_with(data=self.request.POST)
 
     def test_saves_form_with_user_if_form_valid(self, MockNewListForm):
@@ -74,7 +74,7 @@ class NewListViewUnitTest(unittest.TestCase):
         mock_form = MockNewListForm.return_value
         # set mock_form valid
         mock_form.is_valid.return_value = True
-        new_list2(self.request)
+        new_list(self.request)
         mock_form.save.assert_called_once_with(user=self.request.user)
 
     @patch('lists.views.redirect')
@@ -88,7 +88,7 @@ class NewListViewUnitTest(unittest.TestCase):
         """
         mock_form = MockNewListForm.return_value
         mock_form.is_valid.return_value = True
-        resp = new_list2(self.request)
+        resp = new_list(self.request)
         self.assertEqual(resp, mock_redirect.return_value)
         mock_redirect.assert_called_once_with(mock_form.save.return_value)
 
@@ -102,7 +102,7 @@ class NewListViewUnitTest(unittest.TestCase):
         """
         mock_form = MockNewListForm.return_value
         mock_form.is_valid.return_value = False
-        resp = new_list2(self.request)
+        resp = new_list(self.request)
         self.assertEqual(resp, mock_render.return_value)
         mock_render.assert_called_once_with(
             self.request,
@@ -117,7 +117,7 @@ class NewListViewUnitTest(unittest.TestCase):
         """
         mock_form = MockNewListForm.return_value
         mock_form.is_valid.return_value = False
-        new_list2(self.request)
+        new_list(self.request)
         self.assertFalse(mock_form.save.called)
 
 

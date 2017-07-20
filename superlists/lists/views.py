@@ -15,25 +15,12 @@ def home_page(request):
     return render(request, 'lists/home_page.html', {'form': form})
 
 
-def new_list2(request):
+def new_list(request):
     form = NewListForm(data=request.POST)
     if form.is_valid():
         ls = form.save(user=request.user)
         return redirect(ls)
     return render(request, 'lists/home_page.html', {'form': form})
-
-
-def new_list(request):
-    form = TodoForm(data=request.POST)
-    if form.is_valid():
-        ls = List()
-        if request.user.is_authenticated:
-            ls.user = request.user
-        ls.save()
-        form.save(for_list=ls)
-        return redirect(ls)
-    else:
-        return render(request, 'lists/home_page.html', {'form': form})
 
 
 def view_list(request, list_id):
