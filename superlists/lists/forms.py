@@ -52,11 +52,7 @@ class NewListForm(forms.models.ModelForm):
         fields = ('task',)
 
     def save(self, user):
-        ls = List()
-        if user:
-            ls.user = user
-        ls.save()
-        todo = Todo()
-        todo.list = ls
-        todo.task = self.cleaned_data['task']
-        todo.save()
+        if user.is_authenticated:
+            List.create_new(first_todo=self.cleaned_data['task'], user=user)
+        else:
+            List.create_new(first_todo=self.cleaned_data['task'])

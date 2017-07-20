@@ -60,6 +60,30 @@ class ExistingListTodoFormTest(TestCase):
 
 class NewListFormTest(unittest.TestCase):
 
+    @patch('lists.forms.List.create_new')
+    def test_save_creates_new_list_from_post_data_if_user_not_autenticated(
+        self, mock_create_new
+    ):
+        user = Mock(is_authenticated=False)
+        form = NewListForm({'task': 'new todo'})
+        form.is_valid()
+        form.save(user=user)
+        mock_create_new.assert_called_once_with(first_todo='new todo')
+
+    @patch('lists.forms.List.create_new')
+    def test_save_creates_new_list_from_post_data_if_user_is_autenticated(
+        self, mock_create_new
+    ):
+        user = Mock(is_authenticated=True)
+        form = NewListForm({'task': 'new todo'})
+        form.is_valid()
+        form.save(user=user)
+        mock_create_new.assert_called_once_with(
+            first_todo='new todo',
+            user=user,
+        )
+
+    @unittest.skip
     @patch('lists.forms.List')
     @patch('lists.forms.Todo')
     def test_save_creates_new_list_and_todo_from_post_data(
@@ -68,6 +92,7 @@ class NewListFormTest(unittest.TestCase):
         mock_todo = MockTodo.return_value
         mock_list = MockList.return_value
         user = Mock()
+        # 只往 form 里面写 task
         form = NewListForm(data={'task': 'new list'})
         form.is_valid()
         log('form clean data', form.cleaned_data)
