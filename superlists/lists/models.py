@@ -21,6 +21,7 @@ class List(models.Model):
     def create_new(first_todo, user=None):
         ls = List.objects.create(user=user)
         Todo.objects.create(task=first_todo, list=ls)
+        return ls
 
 
 class Todo(models.Model):

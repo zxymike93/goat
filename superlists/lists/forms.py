@@ -50,9 +50,22 @@ class NewListForm(forms.models.ModelForm):
     class Meta:
         model = Todo
         fields = ('task',)
+        widgets = {
+            'task': forms.fields.TextInput(attrs={
+                'placeholder': 'What do you want to do?',
+                'class': 'form-control input-lg',
+            }),
+        }
+        error_messages = {
+            'task': {'required': EMPTY_INPUT_ERROR}
+        }
 
     def save(self, user):
         if user.is_authenticated:
-            List.create_new(first_todo=self.cleaned_data['task'], user=user)
+            ls = List.create_new(
+                first_todo=self.cleaned_data['task'],
+                user=user
+            )
         else:
-            List.create_new(first_todo=self.cleaned_data['task'])
+            ls = List.create_new(first_todo=self.cleaned_data['task'])
+        return ls

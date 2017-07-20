@@ -52,6 +52,11 @@ class ListModelTest(TestCase):
     def test_list_attribute_user_is_optional(self):
         List().full_clean()  # should not raise
 
+    def test_create_new_returns_new_list_instance(self):
+        return_value = List.create_new('new')
+        ls = List.objects.last()
+        self.assertEqual(return_value, ls)
+
 
 class TodoModelsTest(TestCase):
     """

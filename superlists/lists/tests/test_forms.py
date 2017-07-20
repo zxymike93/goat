@@ -83,6 +83,14 @@ class NewListFormTest(unittest.TestCase):
             user=user,
         )
 
+    @patch('lists.forms.List.create_new')
+    def test_save_returns_new_list_instance(self, mock_create_new):
+        user = Mock(is_authenticated=True)
+        form = NewListForm(data={'task': 'new'})
+        form.is_valid()
+        ls = form.save(user=user)
+        self.assertEqual(ls, mock_create_new.return_value)
+
     @unittest.skip
     @patch('lists.forms.List')
     @patch('lists.forms.Todo')

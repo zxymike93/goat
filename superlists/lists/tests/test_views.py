@@ -41,6 +41,7 @@ class HomePageViewTest(TestCase):
         resp = self.client.get('/')
         self.assertTemplateUsed(resp, 'lists/home_page.html')
 
+    @skip
     def test_home_page_uses_todo_form(self):
         resp = self.client.get('/')
         self.assertIsInstance(resp.context['form'], TodoForm)
@@ -66,6 +67,10 @@ class NewListViewUnitTest(unittest.TestCase):
         MockNewListForm.assert_called_once_with(data=self.request.POST)
 
     def test_saves_form_with_user_if_form_valid(self, MockNewListForm):
+        """
+        假设form.is_valid()
+        form.save(user=user)
+        """
         mock_form = MockNewListForm.return_value
         # set mock_form valid
         mock_form.is_valid.return_value = True
@@ -76,6 +81,11 @@ class NewListViewUnitTest(unittest.TestCase):
     def test_redirects_to_form_returned_object_if_form_valid(
         self, mock_redirect, MockNewListForm
     ):
+        """
+        假设form.is_valid()
+        return redirects(form.save())
+        form.save() 期待返回一个 List 实例
+        """
         mock_form = MockNewListForm.return_value
         mock_form.is_valid.return_value = True
         resp = new_list2(self.request)
@@ -86,6 +96,10 @@ class NewListViewUnitTest(unittest.TestCase):
     def test_renders_home_template_with_form_if_form_invalid(
         self, mock_render, MockNewListForm
     ):
+        """
+        假设 form.is_valid() False
+        return render(self.request, 'lists/home_page.html', {'form': form})
+        """
         mock_form = MockNewListForm.return_value
         mock_form.is_valid.return_value = False
         resp = new_list2(self.request)
@@ -97,6 +111,10 @@ class NewListViewUnitTest(unittest.TestCase):
         )
 
     def test_does_not_save_if_form_invalid(self, MockNewListForm):
+        """
+        假设 form.is_valid() False
+        就不 form.save()
+        """
         mock_form = MockNewListForm.return_value
         mock_form.is_valid.return_value = False
         new_list2(self.request)
@@ -120,20 +138,25 @@ class NewListViewIntegratedTest(TestCase):
         self.assertRedirects(resp, ('/lists/%d/' % ls.id))
 
     def test_for_invalid_input_renders_home_page(self):
-        resp = self.client.post('/lists/new/', data={'task': ''})
+        resp = self.client.post('/lists/new/', data={'task': ' '})
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'lists/home_page.html')
 
     def test_validation_errors_are_shown_on_home_page(self):
-        resp = self.client.post('/lists/new/', data={'task': ''})
+        """
+        defaults to be:
+            This field is required.
+        """
+        resp = self.client.post('/lists/new/', data={'task': ' '})
         self.assertContains(resp, escape(EMPTY_INPUT_ERROR))
 
+    @skip
     def test_for_invalid_input_passes_form_to_template(self):
-        resp = self.client.post('/lists/new/', data={'task': ''})
+        resp = self.client.post('/lists/new/', data={'task': ' '})
         self.assertIsInstance(resp.context['form'], TodoForm)
 
     def test_invalid_input_not_saved(self):
-        self.client.post('/lists/new/', data={'task': ''})
+        self.client.post('/lists/new/', data={'task': ' '})
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Todo.objects.count(), 0)
 
@@ -152,7 +175,7 @@ class ListViewTest(TestCase):
     """
     def __post_invalid_input(self):
         ls = List.objects.create()
-        resp = self.client.post('/lists/%d/' % ls.id, data={'task': ''})
+        resp = self.client.post('/lists/%d/' % ls.id, data={'task': ' '})
         return resp
 
     def test_uses_list_template(self):
