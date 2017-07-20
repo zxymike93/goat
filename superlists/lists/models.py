@@ -6,7 +6,8 @@ from django.db import models
 class List(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        null=True
+        blank=True,
+        null=True,
     )
 
     @property
@@ -16,8 +17,10 @@ class List(models.Model):
     def get_absolute_url(self):
         return reverse('view_list', args=[self.id])
 
-    def create_new(self):
-        pass
+    @staticmethod
+    def create_new(first_todo, user=None):
+        ls = List.objects.create(user=user)
+        Todo.objects.create(task=first_todo, list=ls)
 
 
 class Todo(models.Model):

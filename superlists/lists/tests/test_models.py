@@ -30,6 +30,28 @@ class ListModelTest(TestCase):
         Todo.objects.create(list=ls, task='second todo')
         self.assertEqual(ls.name, 'first todo')
 
+    def test_create_new_creates_list_and_first_todo(self):
+        List.create_new(first_todo='new todo')
+        todo = Todo.objects.last()
+        ls = List.objects.last()
+        self.assertEqual(todo.task, 'new todo')
+        self.assertEqual(todo.list, ls)
+
+    def test_create_new_optionally_saves_user(self):
+        user = User.objects.create()
+        List.create_new('new one', user=user)
+        ls = List.objects.last()
+        self.assertEqual(ls.user, user)
+
+    # the two following tests just instantial User
+    # and not calling save() / objects.create()
+    # won't hit database, so that they run faster
+    def test_list_can_have_user(self):
+        List(user=User())  # should not raise
+
+    def test_list_attribute_user_is_optional(self):
+        List().full_clean()  # should not raise
+
 
 class TodoModelsTest(TestCase):
     """

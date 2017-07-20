@@ -49,7 +49,10 @@ class HomePageViewTest(TestCase):
 # mock 一个根本不存在的 Form 类
 @patch('lists.views.NewListForm')
 class NewListViewUnitTest(unittest.TestCase):
-
+    """
+    new_list2 视图函数的测试
+    new_list2 是用隔离测试驱动的 view
+    """
     def setUp(self):
         self.request = HttpRequest()
         self.request.POST['task'] = 'new list'
@@ -134,7 +137,6 @@ class NewListViewIntegratedTest(TestCase):
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Todo.objects.count(), 0)
 
-    @skip
     def test_list_owner_is_saved_if_user_is_authenticated(self):
         user = User.objects.create(email='a@b.com')
         self.client.force_login(user)
