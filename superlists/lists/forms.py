@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-from lists.models import Todo
+from lists.models import Todo, List
 
 
 DUPLICATE_INPUT_ERROR = "You've already got this in your list"
@@ -45,5 +45,18 @@ class ExistingListTodoForm(TodoForm):
         return forms.models.ModelForm.save(self)
 
 
-class NewListForm(object):
-    pass
+class NewListForm(forms.models.ModelForm):
+
+    class Meta:
+        model = Todo
+        fields = ('task',)
+
+    def save(self, user):
+        ls = List()
+        if user:
+            ls.user = user
+        ls.save()
+        todo = Todo()
+        todo.list = ls
+        todo.task = self.cleaned_data['task']
+        todo.save()
