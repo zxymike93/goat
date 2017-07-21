@@ -10,7 +10,10 @@ from utils import log
 
 
 class TodoFormTest(TestCase):
-
+    """
+    test_form_todo_input_has_placeholder_and_css_classes: 测试form的样式
+    test_form_validate_blank_todo
+    """
     def test_form_todo_input_has_placeholder_and_css_classes(self):
         form = TodoForm()
         self.assertIn('placeholder="What do you want to do?"', form.as_p())
@@ -21,17 +24,13 @@ class TodoFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors['task'], [EMPTY_INPUT_ERROR])
 
-    def test_form_save_handles_saving_to_a_list(self):
-        ls = List.objects.create()
-        form = TodoForm(data={'task': 'do me'})
-        todo = form.save(for_list=ls)
-        self.assertEqual(todo, Todo.objects.last())
-        self.assertEqual(todo.task, 'do me')
-        self.assertEqual(todo.list, ls)
-
 
 class ExistingListTodoFormTest(TestCase):
-
+    """
+    test_form_renders_todo_input_box: 测试form的样式
+    test_form_validate_blank:
+    test_form_validate_duplicate:
+    """
     def test_form_renders_todo_input_box(self):
         ls = List.objects.create()
         form = ExistingListTodoForm(for_list=ls)
@@ -40,7 +39,7 @@ class ExistingListTodoFormTest(TestCase):
 
     def test_form_validate_blank(self):
         ls = List.objects.create()
-        form = ExistingListTodoForm(for_list=ls, data={'task': ''})
+        form = ExistingListTodoForm(for_list=ls, data={'task': ' '})
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors['task'], [EMPTY_INPUT_ERROR])
 
@@ -53,12 +52,17 @@ class ExistingListTodoFormTest(TestCase):
 
     def test_form_save(self):
         ls = List.objects.create()
-        form = ExistingListTodoForm(for_list=ls, data={'task': 'hi'})
+        form = ExistingListTodoForm(for_list=ls, data={'task': 'no twins'})
         todo = form.save()
         self.assertEqual(todo, Todo.objects.last())
 
 
 class NewListFormTest(unittest.TestCase):
+
+    def test_form_renders_todo_input_box(self):
+        form = NewListForm()
+        self.assertIn('placeholder="What do you want to do?"', form.as_p())
+        self.assertIn('class="form-control input-lg"', form.as_p())
 
     @patch('lists.forms.List.create_new')
     def test_save_creates_new_list_from_post_data_if_user_not_autenticated(

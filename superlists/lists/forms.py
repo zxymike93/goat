@@ -23,10 +23,6 @@ class TodoForm(forms.models.ModelForm):
             'task': {'required': EMPTY_INPUT_ERROR}
         }
 
-    def save(self, for_list):
-        self.instance.list = for_list
-        return super().save()
-
 
 class ExistingListTodoForm(TodoForm):
 
@@ -41,24 +37,8 @@ class ExistingListTodoForm(TodoForm):
             e.error_dict = {'task': [DUPLICATE_INPUT_ERROR]}
             self._update_errors(e)
 
-    def save(self):
-        return forms.models.ModelForm.save(self)
 
-
-class NewListForm(forms.models.ModelForm):
-
-    class Meta:
-        model = Todo
-        fields = ('task',)
-        widgets = {
-            'task': forms.fields.TextInput(attrs={
-                'placeholder': 'What do you want to do?',
-                'class': 'form-control input-lg',
-            }),
-        }
-        error_messages = {
-            'task': {'required': EMPTY_INPUT_ERROR}
-        }
+class NewListForm(TodoForm):
 
     def save(self, user):
         if user.is_authenticated:
