@@ -1,8 +1,8 @@
 from django.conf.urls import url
 
-from api import api_lists
+from api.views import lists
 
 
 urlpatterns = [
-    url(r'^lists/(\d+)/', api_lists, name='api_lists'),
+    url(r'^lists/(\d+)/', lists, name='api_lists'),
 ]
