@@ -1,3 +1,7 @@
+"""
+测试输入todo在下面的table上会显示
+"""
+
 import time
 
 from selenium.webdriver.common.keys import Keys
@@ -42,8 +46,6 @@ class NewVisitorTest(FunctionalTest):
         #
         self.browser.quit()
         self.browser = self._choose_webdriver()
-        # self.browser = webdriver.Firefox(
-        #     executable_path='/Applications/geckodriver')
 
         self.browser.get(self.server_url)
         page_text = self.browser.find_element_by_tag_name('body').text

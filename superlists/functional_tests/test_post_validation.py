@@ -1,3 +1,7 @@
+"""
+测试todo输入框是否验证输入合法性，以及错误提示。
+"""
+
 import time
 # from unittest import skip
 
