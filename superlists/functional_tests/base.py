@@ -20,7 +20,7 @@ class FunctionalTest(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         """Optionally set up url for liveserver-testing
-        >>> --liveserver=url
+        by >>> --liveserver=url
         """
         for arg in sys.argv:
             if 'liveserver' in arg:
@@ -71,8 +71,25 @@ class FunctionalTest(StaticLiveServerTestCase):
                     time.sleep(0.5)
         return modified_fn
 
+    @wait
+    def _wait_for(self, fn):
+        return fn()
+
     def _todo_input(self):
         return self.browser.find_element_by_id('id_task')
+
+    @wait
+    def _get_error_message(self):
+        return self.browser.find_element_by_css_selector('.has-error')
+
+    @wait
+    def _for_row_in_table(self, entry_text):
+        table = self.browser.find_element_by_id('id-table-todo')
+        rows = table.find_elements_by_tag_name('tr')
+        self.assertIn(
+            entry_text,
+            [row.text for row in rows]
+        )
 
     def _add_todo(self, task):
         num_rows = len(
@@ -85,20 +102,6 @@ class FunctionalTest(StaticLiveServerTestCase):
         self._for_row_in_table('{}: {}'.format(num_task, task))
 
     @wait
-    def _wait_for(self, fn):
-        return fn()
-
-    @wait
-    def _for_row_in_table(self, entry_text):
-        table = self.browser.find_element_by_id('id-table-todo')
-        log('find id-table-todo', table)
-        rows = table.find_elements_by_tag_name('tr')
-        self.assertIn(
-            entry_text,
-            [row.text for row in rows]
-        )
-
-    @wait
     def _wait_to_be_logged_in(self, email):
         self.browser.find_element_by_link_text('Log out')
         navbar = self.browser.find_element_by_css_selector('.navbar')
@@ -109,7 +112,3 @@ class FunctionalTest(StaticLiveServerTestCase):
         self.browser.find_element_by_name('email')
         navbar = self.browser.find_element_by_css_selector('.navbar')
         self.assertNotIn(email, navbar.text)
-
-    @wait
-    def _get_error_message(self):
-        return self.browser.find_element_by_css_selector('.has-error')

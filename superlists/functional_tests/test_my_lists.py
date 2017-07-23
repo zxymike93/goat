@@ -14,6 +14,8 @@ class MyListTest(FunctionalTest):
     __create_pre_authenticated_session: 辅助函数
     test_create_pre_authenticated_session_create_session_for_a_user:
         测试辅助函数能成功生成cookie
+    test_logged_in_users_lists_are_saved_as_my_lists:
+        测试登陆用户能保存多个list并能回访
     """
     def __create_pre_authenticated_session(self, email):
         user = User.objects.create(email=email)
@@ -70,7 +72,6 @@ class MyListTest(FunctionalTest):
         self._wait_for(
             lambda: self.assertEqual(self.browser.current_url, first_list_url)
         )
-
         # start another list
         self.browser.get(self.server_url)
         self._add_todo('hello')
@@ -83,10 +84,11 @@ class MyListTest(FunctionalTest):
         self._wait_for(
             lambda: self.assertEqual(self.browser.current_url, second_list_url)
         )
-
         # logout
         self.browser.find_element_by_link_text('Log out').click()
-        self._wait_for(lambda: self.assertEqual(
-            self.browser.find_elements_by_link_text('My lists'),
-            []
-        ))
+        self._wait_for(
+            lambda: self.assertEqual(
+                self.browser.find_elements_by_link_text('My lists'),
+                []
+            )
+        )
