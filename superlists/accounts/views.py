@@ -9,15 +9,13 @@ from accounts.models import Token
 
 def send_login_email(request):
     email = request.POST['email']
-    # log(type(send_mail))
     token = Token.objects.create(email=email)
     path = reverse('login')
     query = '?token={}'.format(token.uid)
     url = request.build_absolute_uri(path + query)
-    body = 'Use this link to log in: {}'.format(url)
     send_mail(
         'Your login link for Superlists',
-        body,
+        'Use this link to log in: {}'.format(url),
         'zxymike93@163.com',
         [email],
     )
