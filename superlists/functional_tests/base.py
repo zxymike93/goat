@@ -2,7 +2,11 @@ import platform
 import sys
 import time
 
+from django.contrib.auth import (BACKEND_SESSION_KEY, SESSION_KEY,
+                                 get_user_model)
+from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.conf import settings
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.keys import Keys
@@ -11,6 +15,7 @@ from utils import log
 
 
 MAX_WAIT = 10
+User = get_user_model()
 
 
 class FunctionalTest(StaticLiveServerTestCase):
@@ -112,3 +117,28 @@ class FunctionalTest(StaticLiveServerTestCase):
         self.browser.find_element_by_name('email')
         navbar = self.browser.find_element_by_css_selector('.navbar')
         self.assertNotIn(email, navbar.text)
+
+    def _create_pre_authenticated_session(self, email):
+        user = User.objects.create(email=email)
+        # session 类
+        session = SessionStore()
+        # SESSION_KEY == '_auth_user_id'
+        session[SESSION_KEY] = user.pk
+        # BACKEND_SESSION_KEY == '_auth_user_backend'
+        # settings.AUTHENTICATION_BACKENDS[0] ==
+        # ['accounts.authentication.PasswordlessAuthenticationBackend']
+        session[BACKEND_SESSION_KEY] = settings.AUTHENTICATION_BACKENDS[0]
+        session.save()
+
+        self.browser.get(self.server_url + '/unavailable_url/')
+        # request headers 中用于验证身份，格式如下：
+        # Cookie:
+        #     sessionid=90s9olod6nppgfgk8rfq3a5injvtvmpa;
+        #     csrftoken=rAqDLBTQR8QQdXII3iLXEGTugFYxeaoF
+        self.browser.add_cookie(
+            {
+                'name': settings.SESSION_COOKIE_NAME,  # 'sessionid'
+                'value': session.session_key,
+                'path': '/'
+            }
+        )
